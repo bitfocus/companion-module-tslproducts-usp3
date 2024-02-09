@@ -122,13 +122,29 @@ module.exports = {
 						case 'BUTTON':
 							break;
 						case 'PAGEUP':
-							keyData.text = ' ^';
+							if (self.config.model == 'usp3') {
+								keyData.text = '~UPARROW~';
+								keyData.color = '#00FF00';
+							}
+							else {
+								keyData.text = ' ^';
+								keyData.color = '#00FF00';
+							}
 							break;
 						case 'PAGEDOWN':
-							keyData.text = ' v';
+							if (self.config.model == 'usp3') {
+								keyData.text = '~DNARROW~';
+								keyData.color = '#00FF00';
+							}
+							else {
+								keyData.text = ' v';
+								keyData.color = '#00FF00';
+							}
 							break;
 						case 'PAGENUM':
-							keyData.text = 'Page ' + keyData.text;
+							keyData.text = 'Pg ' + keyData.text;
+							keyData.color = '#00FF00';
+							keyData.fontSize = 0;
 							break;
 						default:
 							break;
@@ -154,25 +170,57 @@ module.exports = {
 						}
 					}
 
-					//Set the legacy color - if the color is not 1 (red), 2 (green), or 3 (amber), it is not supported on the legacy USP
-					let intColor = parseInt(keyData.uspColor);
-					switch (intColor) {
-						case 1:
-						case 2:
-						case 3:
-						case 10:
-						case 11:
-						case 12:
-							keyData.uspColorLegacy = intColor;
-							break;
-						default:
-							keyData.uspColorLegacy = 2; //set to 'green' if it's outside of our range
-							break;
+					if (self.config.model == 'usp3') {
+							//Set the legacy color - if the color is not 1 (red), 2 (green), or 3 (amber), it is not supported on the legacy USP
+							let intColor = parseInt(keyData.uspColor);
+							switch (intColor) {
+								case 0:
+									if (self.config.advanced_usp_panel_default_dark_color !== 0) {
+										keyData.uspColor = self.config.advanced_usp_panel_default_dark_color;
+									}
+									break;
+								case 1:
+								case 2:
+								case 3:
+								case 10:
+								case 11:
+								case 12:
+								case 38:
+								case 20:
+								case 32:
+								case 26:
+								case 41:
+								case 23:
+								case 35:
+								case 29:
+									keyData.uspColor = intColor;
+									break;
+								default:
+									keyData.uspColor = self.config.advanced_usp_panel_default_unsupported_color; //set to configured default color if it's outside of our range
+									break;
+							}
 					}
-
-					//if the key text is blank, change the legacy color to 0 (dark)
-					if (keyData.text == '') {
-						keyData.uspColorLegacy = 0;
+					else if (self.config.model == 'usp_legacy') {
+						//Set the legacy color - if the color is not 1 (red), 2 (green), or 3 (amber), it is not supported on the legacy USP
+						let intColor = parseInt(keyData.uspColor);
+						switch (intColor) {
+							case 0:
+								if (self.config.advanced_usp_panel_default_dark_color !== 0) {
+									keyData.uspColorLegacy = self.config.advanced_usp_panel_default_dark_color;
+								}
+								break;
+							case 1:
+							case 2:
+							case 3:
+							case 10:
+							case 11:
+							case 12:
+								keyData.uspColorLegacy = intColor;
+								break;
+							default:
+								keyData.uspColorLegacy = self.config.advanced_usp_panel_default_unsupported_color; //set to configured default color if it's outside of our range
+								break;
+						}
 					}
 
 					// Render Button Text
@@ -198,24 +246,30 @@ module.exports = {
 						}
 					}
 					else {
-						keyText = ' ';
-					}
-	
-					//now check the number of characters in the text, and if it is too long, adjust the font size and lines (as long as the user has not set the font size manually)
-					if (fontSize == 'auto') {
-						if (keyText.length < 4) {
-							fontSize = 2;
-						}
-						else if (keyText.length < 8) {
-							fontSize = 1;
-						}
-						else {
-							fontSize = 0;
-						}
+						keyText = '  ';
 					}
 
 					keyData.text = keyText;
-					keyData.fontSize = fontSize;
+
+					if (keyData.fontSize == undefined) { //if the font size is not already set, determine a size
+						//now check the number of characters in the text, and if it is too long, adjust the font size and lines (as long as the user has not set the font size manually)
+						if (fontSize == 'auto') {
+							if (keyText.length < 4) {
+								fontSize = 2;
+							}
+							else if (keyText.length < 8) {
+								fontSize = 1;
+							}
+							else {
+								fontSize = 0;
+							}
+						}
+
+						keyData.fontSize = fontSize;
+					}
+
+					//pad with 0 if needed
+					keyData.uspColor = String(keyData.uspColor).padStart(2, '0');
 					
 					if (self.config.model == 'usp3') {
 						if (keyData.number <= 16) { //no need to send anything higher than 16

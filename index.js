@@ -43,7 +43,7 @@ class uspInstance extends InstanceBase {
 
 		this.DATA = {
 			satelliteConnected: false,
-			dnfConnected: false,
+			uspConnected: false,
 			keys: [], //key definitions from Companion Satellite surface
 			gpiStates: [
 				{ id: '01', state: false },
@@ -146,6 +146,11 @@ class uspInstance extends InstanceBase {
 			clearInterval(this.USP_INTERVAL);
 			delete this.USP_INTERVAL;
 		}
+
+		if (this.USP_LEGACY_PERIODIC_UPDATE !== undefined) {
+			clearInterval(this.USP_LEGACY_PERIODIC_UPDATE);
+			delete this.USP_LEGACY_PERIODIC_UPDATE;
+		}
 	}
 
 	async init(config) {
@@ -170,19 +175,15 @@ class uspInstance extends InstanceBase {
 		this.checkVariables();
 		this.checkFeedbacks();
 
-		if (this.config.use_as_surface) {
-			this.initTCP_CompanionSatellite();
-		}
-		else {
+		if (~this.config.use_as_surface) {
 			this.CompanionSatellite_Close();
 		}
 
 		if (this.config.model === 'usp3') {
-			if (this.config.host_usp !== undefined && this.config.host_usp !== '') {
-				this.initTCP_USP();
-			}
+			this.initUSP();
 		}
 		else if (this.config.model == 'usp_legacy') {
+			this.initTCP_CompanionSatellite();
 			this.initUSP_Legacy();
 		}
 	}

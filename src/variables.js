@@ -4,7 +4,7 @@ module.exports = {
 
 		let variables = [];
 
-		variables.push({ variableId: 'usp_connected', name: 'Connected to USP' });
+		variables.push({ variableId: 'usp_connected', name: 'Connected to USP Panel' });
 		
 		if (self.config.use_as_surface) {
 			variables.push({ variableId: 'companion_connected', name: 'Connected to Companion Satellite API' });
@@ -42,7 +42,7 @@ module.exports = {
 
 		try {
 			let variableObj = {};
-			if (self.DATA.dnfConnected !== undefined) {
+			if (self.DATA.uspConnected !== undefined) {
 				variableObj['usp_connected'] = self.DATA.uspConnected ? 'True' : 'False';
 			}
 

@@ -27,11 +27,12 @@ module.exports = {
 	initUSP_Legacy: function() {
 		let self = this;
 
-		if (self.config.auto_configure == true && self.config.already_configured !== true) {
+		if ((self.config.auto_configure == true && self.config.already_configured !== true) || (self.config.rerun_configuration == true)) {
 			self.autoConfigureLegacyPanel();
 		}
 		else {
 			self.setupSNMP();
+			//self.periodicallyUpdatePanel();
 		}
 	},
 
@@ -68,10 +69,10 @@ module.exports = {
 			//now we have the ip, the port, and we will make the device name "Companion", and the heartbeat rate 5 seconds
 			self.log('info', 'Configuring Remote Device Assignment Page...');
 			let deviceFormData = '';
-			deviceFormData += `r${self.config.usp_legacy_device_id}c0=Companion`; //device name
-			deviceFormData += `&r${self.config.usp_legacy_device_id}c1=${companionIP}`; //device IP
-			deviceFormData += `&r${self.config.usp_legacy_device_id}c3=${port}`; //destination port number
-			deviceFormData += `&r${self.config.usp_legacy_device_id}c2=19`; //heartbeat rate of 5 seconds
+			deviceFormData += `r${self.config.usp_device_id}c0=Bitfocus+Companion`; //device name
+			deviceFormData += `&r${self.config.usp_device_id}c1=${companionIP}`; //device IP
+			deviceFormData += `&r${self.config.usp_device_id}c3=${port}`; //destination port number
+			deviceFormData += `&r${self.config.usp_device_id}c2=19`; //heartbeat rate of 5 seconds
 
 			let args = {
 				data: deviceFormData,
@@ -130,7 +131,8 @@ module.exports = {
 			self.log('info', 'USP legacy panel auto-configured successfully!');
 
 			//now that we are all done, start the SNMP agent
-			self.setupSNMP.bind(self)();			
+			self.setupSNMP.bind(self)();
+			//self.periodicallyUpdatePanel.bind(self)();		
 		});
 
 		req.on('error', function (err) {
@@ -248,28 +250,21 @@ module.exports = {
 			changed = true;
 		}
 
-		self.updateInternalKey(key);
+		changed = true; //force update for now
 	
 		if (changed) {
 			if (key.number <= 16) { //really only care about the first 16 keys
 				key.changed = true;
+				self.updateInternalKey(key);
 				self.queueLegacyKeyUpdate();
-				//if (self.currentlyUpdatingLegacyPanel == false) {
-					//let keysForm = self.buildKeysObj();
-					//self.currentlyUpdatingLegacyPanel = true;
-					//self.sendUSPLegacyKeysUpdate(keysForm);
-				//}
 			}
-		}
+		}		
 	},
 
 	queueLegacyKeyUpdate: function() {
 		let self = this;
 
-		console.log('queing legacy key update');
-
 		if (self.legacy_key_interval) {
-			console.log('clearing interval');
 			clearInterval(self.legacy_key_interval);
 			self.legacy_key_interval = null;
 		}
@@ -277,13 +272,11 @@ module.exports = {
 		let delay_time = 100;
 
 		if (self.currentlyUpdatingLegacyPanel == true) {
-			delay_time = 3000; //wait 4 seconds if we are in the middle of an update
+			delay_time = self.config.advanced_config_usp_legacy_panel_delay_time //wait 3 seconds if we are in the middle of an update
 		}
-
-		console.log('creating new queue interval')
 		
 		self.legacy_key_interval = setTimeout(function() {
-			console.log('sending legacy key update');
+			self.log('debug', 'Updating USP legacy keys...');
 			let keysForm = self.buildKeysObj();
 			self.currentlyUpdatingLegacyPanel = true;
 			self.sendUSPLegacyKeysUpdate(keysForm);
@@ -299,27 +292,29 @@ module.exports = {
 		for (let i = 0; i < self.DATA.keys.length; i++) {
 			let key = self.DATA.keys[i];
 
-			if (key.changed) {
-				let keyNumberMinus = key.number - 1; //the legacy USP is 0-based
+			let keyNumberMinus = key.number - 1; //the legacy USP is 0-based
 
-				if (key.number <= 16) { //really only care about the first 16 keys
-					if (keysForm !== '') {
-						keysForm += '&';
-					}
-					keysForm += `r${keyNumberMinus}c0=0`; //mode = standard
+			if (key.number <= 16) { //really only care about the first 16 keys
+				if (keysForm !== '') {
 					keysForm += '&';
-					keysForm += `r${keyNumberMinus}c2=${key.text}`; //text ON
-					keysForm += '&';
-					keysForm += `r${keyNumberMinus}c3=${key.text}`; //text OFF
-					keysForm += '&';
-					keysForm += `r${keyNumberMinus}c4=${key.fontSize}`; //font size ON
-					keysForm += '&';
-					keysForm += `r${keyNumberMinus}c5=${key.fontSize}`; //font size OFF
-					keysForm += '&';
-					keysForm += `r${keyNumberMinus}c6=${key.uspColorLegacy}`; //color ON
-					keysForm += '&';
-					keysForm += `r${keyNumberMinus}c7=${key.uspColorLegacy}`; //color OFF
 				}
+				keysForm += `r${keyNumberMinus}c0=0`; //mode = standard
+				keysForm += '&';
+				keysForm += `r${keyNumberMinus}c2=${key.text}`; //text ON
+				keysForm += '&';
+				keysForm += `r${keyNumberMinus}c3=${key.text}`; //text OFF
+				keysForm += '&';
+				keysForm += `r${keyNumberMinus}c4=${key.fontSize}`; //font size ON
+				keysForm += '&';
+				keysForm += `r${keyNumberMinus}c5=${key.fontSize}`; //font size OFF
+				keysForm += '&';
+				keysForm += `r${keyNumberMinus}c6=${key.uspColorLegacy}`; //color ON
+				keysForm += '&';
+				keysForm += `r${keyNumberMinus}c7=${key.uspColorLegacy}`; //color OFF
+				keysForm += '&';
+				keysForm += `r${keyNumberMinus}c8=0`; //Source Type: Local
+				keysForm += '&';
+				keysForm += `r${keyNumberMinus}c9=2`; //Source: Follow GPO
 			}
 
 			key.changed = false; //reset it for next time
@@ -331,9 +326,7 @@ module.exports = {
 	sendUSPLegacyKeysUpdate: function(keysForm) {
 		let self = this;
 
-		//send the web command to update all the keys
-
-		console.log('updating keys...');
+		//send the web command to update all the keys that changed
 
 		if (self.config.host_usp !== '' && self.config.host_usp !== undefined) {
 			let args = {
@@ -343,7 +336,7 @@ module.exports = {
 
 			let client = new Client();
 			let req = client.post('http://' + self.config.host_usp + '/tally.htm', args, function (data, response) {
-				setTimeout(self.updateCurrentlyUpdatingVariable.bind(self), 3000, false);
+				setTimeout(self.updateCurrentlyUpdatingVariable.bind(self), self.config.advanced_config_usp_legacy_panel_delay_time, false);
 			});
 
 			req.on('error', function (err) {
@@ -360,7 +353,17 @@ module.exports = {
 		let self = this;
 	
 		self.currentlyUpdatingLegacyPanel = val;
+	},
+
+	periodicallyUpdatePanel: function() {
+		let self = this;
+
+		if (self.USP_LEGACY_PERIODIC_UPDATE) {
+			clearInterval(self.USP_LEGACY_PERIODIC_UPDATE);
+			self.USP_LEGACY_PERIODIC_UPDATE = null;
+		}
+
+		self.USP_LEGACY_PERIODIC_UPDATE = setInterval(self.queueLegacyKeyUpdate.bind(self), 10000);
 	}
-	
 }
 

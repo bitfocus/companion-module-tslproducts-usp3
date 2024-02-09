@@ -3,7 +3,7 @@
 This module will allow you to have a TSL Products Universal Switch Panel (USP3) or DNF Controls USP act as a satellite surface in Companion, or you can use it to remotely press buttons on the panel for other functions.
 
 ## Module Development
-This module was developed by [Middleman Software, Inc.](http://middleman.tv)
+This module was developed and sponsored by [Middleman Software, Inc.](http://middleman.tv)
 
 ### Module Configuration
 * Choose the model/panel type you will be using, either the newer TSL Products USP3 panel or the legacy DNF Controls USP panel, as they use different protocols.
@@ -14,10 +14,11 @@ This module was developed by [Middleman Software, Inc.](http://middleman.tv)
 * Choose the Port as configured on the USP3 Panel.
 
 #### Panel Configuration
-* Your panel should be on the latest firmware, at least v2.19.
+The module will attempt to auto-configure your panel using some assumed defaults. However, if it cannot, follow these steps:
+
 * On the USP3’s Remote Device Assignment web page, set Device Type = USP3 API. The USP3 is now configured as a TCP/IP Server.
 * The Companion Module will connect using the Port Number associated with the Remote Device.
-* Enter the IP address of the computer running Companion so that it will be allowed to connect to and control the USP3.
+* Enter the IP address of the computer running Companion so that it will be allowed to connect to and control the USP3. **If the IP Address of your Companion server changes, the connection to the panel will be lost**
 * On the USP3 Tally Assignment Table web page, for each key, set Tally Source to the specific Remote Device that will be allowed to control the LCD key’s text and color using the USP3 API. Tally Type will default to “Follow UPS3 API”.
 * On the Event Action Table web page, choose each key press/release, MEM, GPO, and GPI “Event In” that will be sent to the 3rd party client (this module instance).
 	* Select the Event IN Local, Key, GPI, GPO, or MEM number
@@ -37,7 +38,7 @@ The module will attempt to auto-configure your panel using some assumed defaults
 * Log into your USP panel's web interface. The default username is 'dnfuser' and the default password is 'controls'.
 * Under 'Remote Device Assignment', pick a Device # and use the following settings:
 	* Remote Device Label: Companion
-	* IP Address: The IP Address of the Companion server - it must be on the same subnet as the panel because the data traffic is SNMP which is UDP-based
+	* IP Address: The IP Address of the Companion server - it must be on the same subnet as the panel because the data traffic is SNMP which is UDP-based **If the IP Address of your Companion server changes, the connection to the panel will be lost**
 	* Destination Port Number: The Port Number configured in Companion for this panel **Must Be Unique from other instances of the module, if using multiple panels**
 	* Heartbeat Rate: 5 Seconds
 	* Click 'Save'
@@ -54,7 +55,7 @@ If you are using your USP3 or legacy USP panel as a satellite surface for Compan
 You can also configure some settings like you would any other surface type by selecting the "Surfaces" tab in the Companion UI:
 * The surface name
 * The startup page
-* Surface brightness (Anything less than 50% will utilize the USP3 panel's 'DIM' color settings) 
+* Surface brightness (Anything less than 50% will utilize the USP3 panel's 'DIM' color settings, anything higher will use the normal brightness/color settings.) 
 * Never PIN Lock (recommended)
 
 #### Non-Satellite Surface Mode

@@ -39,7 +39,7 @@ module.exports = {
 					let gpi = self.DATA.gpiStates.find(g => g.id == opt.gpi);
 	
 					if (gpi) {
-						if (parseInt(gpi.state) == parseInt(opt.state)) {
+						if (gpi.state == parseInt(opt.state)) {
 							return true;
 						}
 					}
@@ -80,7 +80,7 @@ module.exports = {
 					let gpo = self.DATA.gpoStates.find(g => g.id == opt.gpo);
 	
 					if (gpo) {
-						if (parseInt(gpo.state) == parseInt(opt.state)) {
+						if (gpo.state == parseInt(opt.state)) {
 							return true;
 						}
 					}
@@ -121,7 +121,7 @@ module.exports = {
 					let mem = self.DATA.memStates.find(g => g.id == opt.mem);
 	
 					if (mem) {
-						if (parseInt(mem.state) == parseInt(opt.state)) {
+						if (mem.state == parseInt(opt.state)) {
 							return true;
 						}
 					}
@@ -160,10 +160,10 @@ module.exports = {
 					},
 					callback: (event) => {
 						let opt = event.options;
-						let mem = self.DATA.keyStates.find(g => g.id == opt.key);
+						let key = self.DATA.keyStates.find(g => g.id == opt.key);
 		
 						if (key) {
-							if (parseInt(key.state) == parseInt(opt.state)) {
+							if (key.state == parseInt(opt.state)) {
 								return true;
 							}
 						}

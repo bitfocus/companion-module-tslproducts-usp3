@@ -1,5 +1,7 @@
 const { InstanceStatus, TCPHelper } = require('@companion-module/base');
 
+const Client  = require('node-rest-client').Client;
+
 module.exports = {
 	getClosestUSPColor(color) {
 		let self = this;
@@ -43,7 +45,112 @@ module.exports = {
 		return nearestColor(color);
 	},
 
-	initTCP_USP() {
+	initUSP() {
+		let self = this;
+
+		if (self.config.host_usp !== '') {
+			if ((self.config.auto_configure == true && self.config.already_configured !== true) || (self.config.rerun_configuration == true)) {
+				self.autoConfigurePanel();
+			}
+			else {
+				self.log('info', 'USP3 panel already configured, skipping auto-configuration.');
+				self.initUSP_Connection();
+			}
+		}
+	},
+
+	autoConfigurePanel: async function() { //will attempt to hack web UI to send the panel config we need to make this work as a satellite surface
+		let self = this;
+
+		self.log('info', 'Attempting to auto-configure USP3 panel...');
+
+		//first, we will need Companion's IP that is on the same subnet as the panel's IP, so let's look at all the bound IPs and see if we can find one that is on the same subnet as the panel
+		//the traffic coming from the panel is UDP based so we have to be on the same subnet in order to receive it
+		let panelIP = self.config.host_usp;
+		let panelIPParts = panelIP.split('.');
+		let panelSubnet = panelIPParts[0] + '.' + panelIPParts[1] + '.' + panelIPParts[2] + '.';
+		let companionIP = '';
+		let interfaces = await self.parseVariablesInString('$(internal:all_ip)');
+		let interfacesArr = interfaces.split('\\n');
+		for (let i = 0; i < interfacesArr.length; i++) {
+			let interfaceIP = interfacesArr[i];
+			if (interfaceIP.startsWith(panelSubnet)) {
+				companionIP = interfaceIP;
+				break;
+			}
+		}
+
+		if (companionIP == '') {
+			self.log('error', 'Could not find a network interface on the same subnet as the panel - unable to auto-configure.');
+			self.updateStatus(InstanceStatus.Error);
+			return;
+		}
+
+		self.log('info', 'Configuring Remote Device Assignment Page...');
+
+		let deviceFormData = '';
+		deviceFormData += `r${self.config.usp_device_id}c0=Bitfocus+Companion`; //device name
+		deviceFormData += `&r${self.config.usp_device_id}c1=14`; //device type
+		deviceFormData += `&r${self.config.usp_device_id}c5=${companionIP}`; //companion IP
+		deviceFormData += `&r${self.config.usp_device_id}c7=4`; //heartbeat rate of 5 seconds
+
+		let args = {
+			data: deviceFormData,
+			headers: { "Content-Type": "application/x-www-form-urlencoded" }
+		};
+
+		let client = new Client();
+		let req = client.post('http://' + self.config.host_usp + '/rd_list.htm', args, function (data, response) {
+			self.log('info', 'Remote Device Assignment Page configured successfully! Now configuring Tally Assignment Page...');
+			//then we will set up the Tally Assignment, and make all switches of type Remote USP and assigned to our Companion device
+			self.autoConfigurePanelSwitches.bind(self)();
+		});
+
+		req.on('error', function (err) {
+			self.log('error', 'Error auto configuring USP3 panel: ' + err);
+		});
+	},
+
+	autoConfigurePanelSwitches: function() {
+		let self = this;
+
+		self.log('info', 'Configuring Tally Assignment Page...');
+
+		let switchFormData = '';
+
+		for (let i = 0; i < 16; i++) {
+			if (switchFormData !== '') {
+				switchFormData += '&';
+			}
+
+			switchFormData += `r${i*5}c1=2`; //tally source
+			switchFormData += '&';
+			switchFormData += `r${i*5}c2=12`; //tally type - follow usp3 api
+			switchFormData += '&';
+			switchFormData += `r${i*5}c4=0`; //tally color = dark
+		}
+
+		let args = {
+			data: switchFormData,
+			headers: { "Content-Type": "application/x-www-form-urlencoded" }
+		};
+
+		let client = new Client();
+		let req = client.post('http://' + self.config.host_usp + '/tally.htm', args, function (data, response) {
+			self.config.already_configured = true;
+			self.saveConfig(self.config);
+
+			self.log('info', 'USP3 panel auto-configured successfully!');
+
+			self.initUSP_Connection();
+		});
+
+		req.on('error', function (err) {
+			self.log('error', 'Error auto configuring USP panel: ' + err);
+		});
+	},
+
+	initUSP_Connection() {
 		let self = this;
 
 		if (self.SOCKET_USP !== undefined) {
@@ -68,11 +175,24 @@ module.exports = {
 				self.SOCKET_USP == undefined;
 				self.DATA.uspConnected = false;
 				self.checkVariables();
+
+				self.log('warn', 'Connection lost. Attempting to reconnect to USP3 in 5 seconds...');
+				//try again in 5 seconds
+				setTimeout(() => {
+					self.updateStatus(InstanceStatus.Connecting, 'Attempting to Reconnect to Panel...');
+					self.log('info', `Attempting to reconnect to USP3.`);
+					self.initUSP_Connection();
+				}, 5000);
 			});
 
 			self.SOCKET_USP.on('connect', () => {
+				self.log('info', `Connected to USP3 Panel at ${self.config.host_usp}:${self.config.port_usp}`);
 				self.getUSPInformation();
 				self.initUSPPolling();
+
+				if (self.config.use_as_surface) {
+					this.initTCP_CompanionSatellite();
+				}
 
 				self.updateStatus(InstanceStatus.Ok);
 				self.DATA.uspConnected = true;
@@ -89,12 +209,19 @@ module.exports = {
 				self.DATA.uspConnected = false;
 				self.checkVariables();
 				clearInterval(self.USP_INTERVAL);
+
+				//try again in 5 seconds
+				setTimeout(() => {
+					self.initUSP_Connection();
+				}, 5000);
 			});
 		}
 	},
 
 	processUSPData(data) {
 		let self = this;
+
+		self.log('debug', 'Received TCP Data from USP3: ' + data);
 
 		try {
 			let lines = data.split('\n');
@@ -117,6 +244,9 @@ module.exports = {
 						}
 						else if (responses[j].indexOf('MEM') > -1) {
 							self.processUSP_MEMData(responses[j]);
+						}
+						else {
+							console.log('Unknown USP3 response: ' + responses[j]);
 						}
 					}
 				}
@@ -177,10 +307,16 @@ module.exports = {
 				state: keyState
 			};
 	
-			//check to see if this gpi state is already in the array, and if it is, update it, otherwise add it
+			//check to see if this key state is already in the array, and if it is, update it, otherwise add it
 			let found = false;
+			let keyChanged = true; //assume it changed until we find out otherwise
+
 			for (let i = 0; i < self.DATA.keyStates.length; i++) {
 				if (self.DATA.keyStates[i].id == keyNumber) {
+					if (self.DATA.keyStates[i].state == keyState) {
+						keyChanged = false;
+					}
+
 					self.DATA.keyStates[i].state = keyState;
 					found = true;
 					break;
@@ -192,8 +328,11 @@ module.exports = {
 			}
 
 			if (self.config.use_as_surface) {
-				keyNumber = parseInt(keyNumber) - 1; //zero based		
-				self.sendCompanionSatelliteCommand(`KEY-PRESS DEVICEID=${self.DEVICE_ID} KEY=${keyNumber} PRESSED=${keyState}`);
+				//send the key press to the companion satellite
+				if (keyChanged) { //only send if the key state changed
+					keyNumber = parseInt(keyNumber) - 1; //zero based
+					self.sendCompanionSatelliteCommand(`KEY-PRESS DEVICEID=${self.DEVICE_ID} KEY=${keyNumber} PRESSED=${keyState}`);
+				}
 			}
 
 			self.checkVariables();
@@ -216,7 +355,7 @@ module.exports = {
 				data.lastIndexOf(":")
 			);
 	
-			let gpiState = (data.length - 1) == '1' ? true : false;
+			let gpiState = (data[data.length - 1]) == '1' ? true : false;
 	
 			let gpiObj = {
 				id: gpiNumber,
@@ -259,7 +398,7 @@ module.exports = {
 				data.lastIndexOf(":")
 			);
 
-			let gpoState = (data.length - 1) == '1' ? true : false;
+			let gpoState = (data[data.length - 1]) == '1' ? true : false;
 
 			let gpoObj = {
 				id: gpoNumber,
@@ -300,7 +439,7 @@ module.exports = {
 				data.lastIndexOf(":")
 			);
 
-			let memState = (data.length - 1) == '1' ? true : false;
+			let memState = (data[data.length - 1]) == '1' ? true : false;
 
 			let memObj = {
 				id: memNumber,
@@ -351,7 +490,7 @@ module.exports = {
 		if (self.SOCKET_USP.isConnected) {
 			self.sendUSPCommand('KEY?'); //get key states
 			self.sendUSPCommand('GPI?'); //get gpi states
-			self.sendUSPCommand('GPS?'); //get gpo states - this might actually be GPO? but the manual says GPS?
+			self.sendUSPCommand('GPS?'); //get gpo states
 		}
 	},
 
@@ -363,7 +502,8 @@ module.exports = {
 			delete self.USP_INTERVAL;
 		}
 
-		if (self.config.polling) {
+		if (self.config.polling || self.config.use_as_surface == true) { //if we are using this as a surface, we need to poll or the panel will think it is disconnected
+			self.config.poll_interval = 5000;
 			self.USP_INTERVAL = setInterval(() => {
 				self.getUSPInformation();
 			}, self.config.poll_interval);

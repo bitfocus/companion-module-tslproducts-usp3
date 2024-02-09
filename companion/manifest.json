@@ -9,13 +9,13 @@
 	"bugs": "https://github.com/bitfocus/companion-module-tslproducts-usp3/issues",
 	"maintainers": [
 		{
-			"name": "Joseph Adams",
-			"email": "josephdadams@gmail.com"
-		},
-		{
 			"name": "James Heliker",
 			"email": "james.heliker@middleman.tv"
-		}		
+		},
+		{
+			"name": "Joseph Adams",
+			"email": "josephdadams@gmail.com"
+		}
 	],
 	"legacyIds": [],
 	"runtime": {
