@@ -6,7 +6,7 @@ module.exports = {
 
 		variables.push({ variableId: 'usp_connected', name: 'Connected to USP Panel' });
 		
-		if (self.config.use_as_surface) {
+		if (self.config.use_as_surface == true) {
 			variables.push({ variableId: 'companion_connected', name: 'Connected to Companion Satellite API' });
 		}
 
@@ -45,10 +45,16 @@ module.exports = {
 			if (self.DATA.uspConnected !== undefined) {
 				variableObj['usp_connected'] = self.DATA.uspConnected ? 'True' : 'False';
 			}
+			else {
+				variableObj['usp_connected'] = '';
+			}
 
 			if (self.config.use_as_surface) {
 				if (self.DATA.satelliteConnected !== undefined) {
 					variableObj['companion_connected'] = self.DATA.satelliteConnected ? 'True' : 'False';
+				}
+				else {
+					variableObj['companion_connected'] = '';
 				}
 			}
 

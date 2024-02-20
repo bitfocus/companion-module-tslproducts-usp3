@@ -11,7 +11,6 @@ const utils = require('./src/utils');
 const usp = require('./src/usp');
 const usp_legacy = require('./src/usp_legacy');
 
-const models = require('./src/models');
 const constants = require('./src/constants');
 
 class uspInstance extends InstanceBase {
@@ -28,7 +27,6 @@ class uspInstance extends InstanceBase {
 			...utils,
 			...usp,
 			...usp_legacy,
-			...models,
 			...constants
 		})
 
@@ -41,11 +39,13 @@ class uspInstance extends InstanceBase {
 
 		this.USP_INTERVAL = undefined; //used to request data from USP3 panel periodically
 
+		this.USP_LEGACY_PERIODIC_UPDATE = undefined; //used to update the USP legacy panel periodically
+
 		this.DATA = {
-			satelliteConnected: false,
-			uspConnected: false,
+			satelliteConnected: false, //used to track if we are connected to the Companion Satellite API
+			uspConnected: false, //used to track if we are connected to the USP panel
 			keys: [], //key definitions from Companion Satellite surface
-			gpiStates: [
+			gpiStates: [ //GPI states from USP3 panel
 				{ id: '01', state: false },
 				{ id: '02', state: false },
 				{ id: '03', state: false },
@@ -63,7 +63,7 @@ class uspInstance extends InstanceBase {
 				{ id: '15', state: false },
 				{ id: '16', state: false }
 			],
-			gpoStates: [
+			gpoStates: [ //GPO states from USP3 panel
 				{ id: '01', state: false },
 				{ id: '02', state: false },
 				{ id: '03', state: false },
@@ -81,7 +81,7 @@ class uspInstance extends InstanceBase {
 				{ id: '15', state: false },
 				{ id: '16', state: false }
 			],
-			memStates: [
+			memStates: [ //mem states from USP3 panel
 				{ id: '01', state: false },
 				{ id: '02', state: false },
 				{ id: '03', state: false },
@@ -99,7 +99,7 @@ class uspInstance extends InstanceBase {
 				{ id: '15', state: false },
 				{ id: '16', state: false }
 			],
-			keyStates: [
+			keyStates: [ //key states from USP3 panel
 				{ id: '01', state: false },
 				{ id: '02', state: false },
 				{ id: '03', state: false },
@@ -116,7 +116,7 @@ class uspInstance extends InstanceBase {
 				{ id: '14', state: false },
 				{ id: '15', state: false },
 				{ id: '16', state: false }
-			], //key states from USP3 panel
+			],
 		};
 
 		this.DEVICE_ID = this.id; //device ID for Companion Satellite API
@@ -175,15 +175,15 @@ class uspInstance extends InstanceBase {
 		this.checkVariables();
 		this.checkFeedbacks();
 
-		if (~this.config.use_as_surface) {
-			this.CompanionSatellite_Close();
+		if (this.config.use_as_surface == true) {
+			this.CompanionSatellite_Close(); //close the Companion Satellite API if it is open
 		}
 
 		if (this.config.model === 'usp3') {
 			this.initUSP();
 		}
 		else if (this.config.model == 'usp_legacy') {
-			this.initTCP_CompanionSatellite();
+			this.initCompanionSatellite();
 			this.initUSP_Legacy();
 		}
 	}

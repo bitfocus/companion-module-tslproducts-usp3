@@ -5,6 +5,7 @@ module.exports = {
 		let actions = {};
 
 		if (self.config.model == 'usp3') {
+			//these actions are only available for the newer usp3 surfaces
 			actions.setGPO = {
 				name: 'Set GPO On/Off',
 				options: [
@@ -50,7 +51,8 @@ module.exports = {
 				}
 			};
 
-			if (!this.config.use_as_surface) {
+			if (this.config.use_as_surface == false) {
+				//these actions are only available if the device is not used as a surface
 				actions.pressKey = {
 					name: 'Press Key',
 					options: [

@@ -72,6 +72,7 @@ module.exports = {
 		{ id: '16', label: 'KEY 16' }
 	],
 	COLORS: [
+		//the colors are the same between the two different types of panels, but only the ones with a hex value are implemented as surface colors
 		{ id: '00', label: 'SOLID_DARK', hex: '#000000' },
 		{ id: '01', label: 'SOLID_RED', hex: '#FF0000' },
 		{ id: '02', label: 'SOLID_GREEN', hex: '#00FF00' },

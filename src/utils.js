@@ -1,50 +1,65 @@
 const { InstanceStatus, TCPHelper } = require('@companion-module/base');
 
 module.exports = {
-	initTCP_CompanionSatellite() {
+	initCompanionSatellite() {
 		let self = this;
 
-		if (self.SOCKET_COMPANION !== undefined) {
-			self.SOCKET_COMPANION.destroy();
-			delete self.SOCKET_COMPANION;
+		try {
+			if (self.SOCKET_COMPANION !== undefined) { //destroy socket if already exists
+				self.SOCKET_COMPANION.destroy();
+				delete self.SOCKET_COMPANION;
+			}
+	
+			if (self.config.host_companion === undefined) { //set to localhost if not set
+				self.config.host_companion = '127.0.0.1';
+			}
+	
+			if (self.config.port_companion === undefined) { //set to current default port if not set
+				self.config.port_companion = 16622;
+			}
+		}
+		catch (error) {
+			self.log('error', 'Error initializing Companion Satellite API: ' + error.toString());
 		}
 
-		if (self.config.host_companion === undefined) {
-			self.config.host_companion = '127.0.0.1';
-		}
+		if (self.config.host_companion !== undefined) {
+			try {
+				self.log('info', `Opening Connection to Companion Satellite API: ${self.config.host_companion}:${self.config.port_companion}`);
 
-		if (self.config.port_companion === undefined) {
-			self.config.port_companion = 16622;
-		}
-
-		if (self.config.host_companion) {
-			self.log('info', `Opening Connection to Companion Satellite API: ${self.config.host_companion}:${self.config.port_companion}`);
-
-			self.SOCKET_COMPANION = new TCPHelper(self.config.host_companion, self.config.port_companion);
-
-			self.SOCKET_COMPANION.on('error', (err) => {
-				self.log('error', 'Network error with Companion Satellite API: ' + err.message);
-			})
-
-			self.SOCKET_COMPANION.on('connect', () => {
-				self.log('info', 'Connected to Companion Satellite API');
-			})
-
-			self.SOCKET_COMPANION.on('data', function (data) {	
-				self.processCompanionData(data);
-			});
+				self.SOCKET_COMPANION = new TCPHelper(self.config.host_companion, self.config.port_companion);
+	
+				self.SOCKET_COMPANION.on('error', (err) => {
+					self.log('error', 'Network error with Companion Satellite API: ' + err.message);
+				})
+	
+				self.SOCKET_COMPANION.on('connect', () => {
+					self.log('info', 'Connected to Companion Satellite API');
+				})
+	
+				self.SOCKET_COMPANION.on('data', function (data) {	
+					self.processCompanionData(data); //this function will handle all incoming data from the Companion Satellite API
+				});
+			}
+			catch(error) {
+				self.log('error', 'Error initializing Companion Satellite API: ' + error.toString());
+			}
 		}
 	},
 
 	CompanionSatellite_Close() {
 		let self = this;
 
-		//close socket if it exists
-		if (self.SOCKET_COMPANION !== undefined) {
-			self.sendCompanionSatelliteCommand(`REMOVE-DEVICE DEVICEID=${this.DEVICE_ID}`);
-			self.sendCompanionSatelliteCommand('QUIT');
-			self.SOCKET_COMPANION.destroy();
-			delete self.SOCKET_COMPANION;
+		try {
+			//close socket if it exists
+			if (self.SOCKET_COMPANION !== undefined) {
+				self.sendCompanionSatelliteCommand(`REMOVE-DEVICE DEVICEID=${this.DEVICE_ID}`);
+				self.sendCompanionSatelliteCommand('QUIT');
+				self.SOCKET_COMPANION.destroy();
+				delete self.SOCKET_COMPANION;
+			}
+		}
+		catch (error) {
+			self.log('error', 'Error closing Companion Satellite API: ' + error.toString());
 		}
 	},
 
@@ -52,18 +67,19 @@ module.exports = {
 		let self = this;
 
 		try {
-			let str_raw = String(data).trim();
-			let str_split = str_raw.split('\n');
+			let str_raw = String(data).trim(); //convert the buffer data to string
+			let str_split = str_raw.split('\n'); //split the string into individual commands based on line breaks
 	
 			for (let index = 0; index < str_split.length; index++) {
 				let str = str_split[index];
 	
-				let params = str.split(' ');
-				let command = params[0];
+				let params = str.split(' '); //split params by space
+				let command = params[0]; //first param is the command
 	
 				// Create a satallite device on first connect
-				if (command == 'BEGIN') {
+				if (command == 'BEGIN') { //initial preamble
 					let productName = '';
+
 					if (self.config.model == 'usp3') {
 						productName = 'TSL Products USP3'
 					}
@@ -71,8 +87,10 @@ module.exports = {
 						productName = 'DNF Controls Legacy USP';
 					}
 					else {
-						productName = 'Unknown USP Type';
+						productName = 'Unknown USP Type'; //not likely to happen
 					}
+
+					//add the device to as a satellite surface but do not send any bitmap data, just colors and text since the panels do not support anything else
 					self.sendCompanionSatelliteCommand(`ADD-DEVICE DEVICEID=${self.DEVICE_ID} PRODUCT_NAME="${productName}" BITMAPS=false COLORS=true TEXT=true`);
 					continue;
 				}
@@ -93,7 +111,7 @@ module.exports = {
 					continue;
 				}
 	
-				// Recieved a Brightness Command
+				// Received a Brightness Command
 				if (command == 'BRIGHTNESS') {
 					//panel does not support brightness commands, but does support dim colors, so store the brightness value and use it later with color processing
 					self.DATA.brightness = params[2].replace('VALUE=', '');
@@ -123,34 +141,34 @@ module.exports = {
 							break;
 						case 'PAGEUP':
 							if (self.config.model == 'usp3') {
-								keyData.text = '~UPARROW~';
-								keyData.color = '#00FF00';
+								keyData.text = '~UPARROW~'; //this is the nicer looking arrow the new panels can do
+								keyData.color = '#00FF00'; //green background
 							}
 							else {
-								keyData.text = ' ^';
-								keyData.color = '#00FF00';
+								keyData.text = ' ^'; //the older panels do not have the nice arrow, so use a caret instead
+								keyData.color = '#00FF00'; //green background
 							}
 							break;
 						case 'PAGEDOWN':
 							if (self.config.model == 'usp3') {
-								keyData.text = '~DNARROW~';
-								keyData.color = '#00FF00';
+								keyData.text = '~DNARROW~'; //this is the nicer looking arrow the new panels can do
+								keyData.color = '#00FF00'; //green background
 							}
 							else {
-								keyData.text = ' v';
-								keyData.color = '#00FF00';
+								keyData.text = ' v'; //the older panels do not have the nice arrow, so use a lowercase v instead
+								keyData.color = '#00FF00'; //green background
 							}
 							break;
 						case 'PAGENUM':
-							keyData.text = 'Pg ' + keyData.text;
-							keyData.color = '#00FF00';
+							keyData.text = 'Pg ' + keyData.text; //add the page number to the text
+							keyData.color = '#00FF00'; //green background
 							keyData.fontSize = 0;
 							break;
 						default:
 							break;
 					}
 	
-					keyData.pressed = params[7].replace('PRESSED=', '') == 'true' ? true : false;
+					keyData.pressed = params[7].replace('PRESSED=', '') == 'true' ? true : false; //mark whether the companion button is pressed or not
 	
 					//determine what color it should be and align it with one of the supported color constants, and then send that color command
 					let closestColor = self.getClosestUSPColor(keyData.color);
@@ -171,7 +189,7 @@ module.exports = {
 					}
 
 					if (self.config.model == 'usp3') {
-							//Set the legacy color - if the color is not 1 (red), 2 (green), or 3 (amber), it is not supported on the legacy USP
+							//Set the color
 							let intColor = parseInt(keyData.uspColor);
 							switch (intColor) {
 								case 0:
@@ -226,14 +244,7 @@ module.exports = {
 					// Render Button Text
 					let keyText = keyData.text
 	
-					//make sure the font size is configured
-					if (self.config.font_size === undefined) {
-						self.config.font_size = 0;
-					}
-	
-					let fontSize = self.config.font_size;
-	
-					// Check if there is a title/text on the button?
+					// Check if there is a title/text on the button
 					if (keyText.length > 0) {				
 						// If the text includes a line break, replace it with a space
 						if (keyText.includes('\\n')) {
@@ -249,7 +260,14 @@ module.exports = {
 						keyText = '  ';
 					}
 
-					keyData.text = keyText;
+					keyData.text = keyText; //set the final key text
+
+					//make sure the module config font size is configured
+					if (self.config.font_size === undefined) {
+						self.config.font_size = 0; //auto-scale
+					}
+	
+					let fontSize = self.config.font_size;
 
 					if (keyData.fontSize == undefined) { //if the font size is not already set, determine a size
 						//now check the number of characters in the text, and if it is too long, adjust the font size and lines (as long as the user has not set the font size manually)
@@ -268,7 +286,7 @@ module.exports = {
 						keyData.fontSize = fontSize;
 					}
 
-					//pad with 0 if needed
+					//pad with 0 if needed because the protocol requires 2 digits
 					keyData.uspColor = String(keyData.uspColor).padStart(2, '0');
 					
 					if (self.config.model == 'usp3') {
@@ -292,6 +310,7 @@ module.exports = {
 	},
 
 	updateInternalKey(keyData) {
+		//updates the internal store knowing whether a button on the USP panel is currently pressed or not
 		let self = this;
 
 		if (self.config.verbose) {
@@ -313,6 +332,7 @@ module.exports = {
 	},
 
 	startCompanionSatellitePing() {
+		//start the ping interval to keep the connection alive
 		let self = this;
 
 		self.COMPANION_PING_INTERVAL = setInterval(function () {
@@ -323,13 +343,18 @@ module.exports = {
 	sendCompanionSatelliteCommand(cmd) {
 		let self = this;
 
-		if (self.SOCKET_COMPANION !== undefined && self.SOCKET_COMPANION.isConnected) {
-			if (self.config.verbose) {
-				if (cmd !== 'PING') {
-					self.log('debug', 'Sending Companion Satellite API Command: ' + cmd);
+		try {
+			if (self.SOCKET_COMPANION !== undefined && self.SOCKET_COMPANION.isConnected) {
+				if (self.config.verbose) {
+					if (cmd !== 'PING') {
+						self.log('debug', 'Sending Companion Satellite API Command: ' + cmd);
+					}
 				}
+				self.SOCKET_COMPANION.send(cmd + '\n');
 			}
-			self.SOCKET_COMPANION.send(cmd + '\n');
+		}
+		catch (error) {
+			self.log('error', 'Error sending Companion Satellite API Command: ' + error.toString());
 		}
 	},
 }

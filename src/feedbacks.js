@@ -130,7 +130,7 @@ module.exports = {
 				},
 			};
 	
-			if (!self.config.use_as_surface) {
+			if (self.config.use_as_surface == false) {
 				feedbacks.keyState = {
 					type: 'boolean',
 					name: 'Key Number is in X State',

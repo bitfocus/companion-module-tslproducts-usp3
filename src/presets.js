@@ -7,7 +7,7 @@ module.exports = {
 		let presets = [];
 
 		if (self.config.model == 'usp3') {
-			if (!self.config.use_as_surface) {
+			if (self.config.use_as_surface == false) {
 				for (var i = 0; i < this.KEY_LIST.length; i++) {
 					let keyObj = this.KEY_LIST[i];
 					let presetObj = {
