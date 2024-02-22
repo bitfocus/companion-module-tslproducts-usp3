@@ -205,7 +205,7 @@ module.exports = {
 				max: 30000,
 				default: 1000,
 				width: 6,
-				isVisible: (configValues) => configValues.polling == true,
+				isVisible: (configValues) => configValues.polling == true && configValues.use_as_surface == false,
 			},
 			{
 				type: 'static-text',

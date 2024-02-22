@@ -41,13 +41,15 @@ module.exports = {
 
 		self.log('info', 'Attempting to auto-configure USP legacy panel...');
 
+		let companionIP = '';
+		
 		try {
 			//first, we will need Companion's IP that is on the same subnet as the panel's IP, so let's look at all the bound IPs and see if we can find one that is on the same subnet as the panel
 			//the traffic coming from the panel is UDP based so we have to be on the same subnet in order to receive it
 			let panelIP = self.config.host_usp;
 			let panelIPParts = panelIP.split('.');
 			let panelSubnet = panelIPParts[0] + '.' + panelIPParts[1] + '.' + panelIPParts[2] + '.';
-			let companionIP = '';
+			
 			let interfaces = await self.parseVariablesInString('$(internal:all_ip)');
 			let interfacesArr = interfaces.split('\\n');
 			for (let i = 0; i < interfacesArr.length; i++) {

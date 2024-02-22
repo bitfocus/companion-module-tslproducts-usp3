@@ -116,7 +116,7 @@ module.exports = {
 						{
 							feedbackId: 'gpoState',
 							options: {
-								gpi: gpoObj.id,
+								gpo: gpoObj.id,
 								state: '1',
 							},
 							style: {

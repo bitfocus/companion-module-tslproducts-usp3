@@ -84,7 +84,7 @@ module.exports = {
 						productName = 'TSL Products USP3'
 					}
 					else if (self.config.model == 'usp_legacy') {
-						productName = 'DNF Controls Legacy USP';
+						productName = 'DNF Controls USP';
 					}
 					else {
 						productName = 'Unknown USP Type'; //not likely to happen
