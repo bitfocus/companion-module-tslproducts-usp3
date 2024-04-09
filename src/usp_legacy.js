@@ -170,9 +170,17 @@ module.exports = {
 				self.log('info', 'Initializing USP Legacy SNMP Agent');
 				self.log('debug', 'USP Legacy SNMP Agent listening on port ' + self.config.port_usp_legacy);
 				try {
+					if (self.USP_LEGACY_SNMP_AGENT) {
+						self.USP_LEGACY_SNMP_AGENT.close();
+						self.USP_LEGACY_SNMP_AGENT = null;
+					}
+
 					self.USP_LEGACY_SNMP_AGENT = snmp.createAgent({ port: self.config.port_usp_legacy, accessControlModelType: snmp.AccessControlModelType.Simple}, function (error, data) {
 						if (error) {
 							console.error(error);
+
+							//if we get an error, we will try to reinitialize the SNMP agent after 5 seconds
+							setTimeout(self.setupSNMP.bind(self), 5000);
 						}
 						else {
 							self.processUSPLegacyData(data);

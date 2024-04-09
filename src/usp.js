@@ -69,7 +69,6 @@ module.exports = {
 		
 		try {
 			//first, we will need Companion's IP that is on the same subnet as the panel's IP, so let's look at all the bound IPs and see if we can find one that is on the same subnet as the panel
-			//the traffic coming from the panel is UDP based so we have to be on the same subnet in order to receive it
 			let panelIP = self.config.host_usp;
 			let panelIPParts = panelIP.split('.');
 			let panelSubnet = panelIPParts[0] + '.' + panelIPParts[1] + '.' + panelIPParts[2] + '.';
@@ -85,9 +84,23 @@ module.exports = {
 			}
 
 			if (companionIP == '') {
-				self.log('error', 'Could not find a network interface on the same subnet as the panel - unable to auto-configure.');
-				self.updateStatus(InstanceStatus.Error);
-				return;
+				//lets just pick the first IP that is not 0.0.0.0 or 127.0.0.1
+				for (let i = 0; i < interfacesArr.length; i++) {
+					let interfaceIP = interfacesArr[i];
+					if (interfaceIP.startsWith('0.0.0') == false && interfaceIP.startsWith('127.0.0') == false) {
+						companionIP = interfaceIP;
+						break;
+					}
+				}
+
+				if (companionIP == '') {
+					self.log('error', 'Could not find a suitable IP for Companion to use as a satellite surface. Turn off Auto-Configure and manually configure the panel.');
+					self.updateStatus(InstanceStatus.ConnectionFailure);
+					return;
+				}
+				else {
+					self.log('info', 'Using IP ' + companionIP + ' for Companion while auto configuring the panel.');
+				}
 			}
 		}
 		catch (error) {

@@ -30,6 +30,10 @@ module.exports = {
 	
 				self.SOCKET_COMPANION.on('error', (err) => {
 					self.log('error', 'Network error with Companion Satellite API: ' + err.message);
+					//try to connect again in 10 seconds
+					setTimeout(() => {
+						self.initCompanionSatellite();
+					}, 10000);
 				})
 	
 				self.SOCKET_COMPANION.on('connect', () => {

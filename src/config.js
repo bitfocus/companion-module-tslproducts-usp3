@@ -106,7 +106,7 @@ module.exports = {
 				type: 'dropdown',
 				id: 'port_usp',
 				label: 'Remote Device Port as configured on USP3 Panel',
-				width: 3,
+				width: 6,
 				default: '50001',
 				choices: [
 					{ id: '50001', label: 'Remote Device 1: 50001' },
