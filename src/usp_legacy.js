@@ -62,13 +62,13 @@ module.exports = {
 
 			if (companionIP == '') {
 				self.log('error', 'Could not find a network interface on the same subnet as the panel - unable to auto-configure.');
-				self.updateStatus(InstanceStatus.Error);
+				self.updateStatus(InstanceStatus.ConnectionFailure);
 				return;
 			}
 		}
 		catch(error) {
 			self.log('error', 'Error auto configuring USP legacy panel: ' + error);
-			self.updateStatus(InstanceStatus.Error);
+			self.updateStatus(InstanceStatus.ConnectionFailure);
 			return;
 		}
 
