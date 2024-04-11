@@ -12,4 +12,4 @@ Currently supports:
 
 Brought to you by [Middleman Software](https://middleman.tv).
 
-See HELP.md and LICENSE
+See [HELP.md](companion/HELP.md) for specific usage information.
