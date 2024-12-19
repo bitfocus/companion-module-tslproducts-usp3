@@ -3,8 +3,7 @@
 This module will allow you to have a TSL Products Universal Switch Panel (USP3) or DNF Controls USP act as a satellite surface in Companion, or you can use it to remotely press buttons on the panel for other functions.
 
 ## Module Development
-
-This module was developed and sponsored by [Middleman Software, Inc.](http://middleman.tv)
+This module was developed and sponsored by [Middleman Software](http://middleman.tv).
 
 ### Module Configuration
 
@@ -90,10 +89,9 @@ If you are not using the panel as a satellite surface (USP3 only):
 - Key [1-16] is On/Off (USP3 only)
 
 **Variables:**
-
-- Connected to Panel (True/False)
-- Conected to Companion Satellite API (True/False) (if in surface mode)
-- GPI [1-16] State (USP3 only)
-- GPO [1-16] State (USP3 only)
-- MEM [1-16] State (USP3 only)
-- Key [1-16] State (when not in surface mode) (USP3 only)
+* Connected to Panel (True/False)
+* Conected to Companion Satellite API (True/False) (if in surface mode)
+* GPI [1-16] State (USP3 only)
+* GPO [1-16] State (USP3 only)
+* MEM [1-16] State (USP3 only)
+* Key [1-16] State (when not in surface mode) (USP3 only)
