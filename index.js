@@ -123,6 +123,8 @@ class uspInstance extends InstanceBase {
 
 		this.currentlyUpdatingLegacyPanel = false; //used to track if we are currently updating the USP legacy panel
 		this.legacy_key_interval  = null; //used to track the interval for updating the USP legacy panel
+
+		this.receiveBuffer = '' //buffer for satellite data
 	}
 
 	async destroy() {

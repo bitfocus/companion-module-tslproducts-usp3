@@ -27,7 +27,9 @@ module.exports = {
 				self.log('info', `Opening Connection to Companion Satellite API: ${self.config.host_companion}:${self.config.port_companion}`);
 
 				self.SOCKET_COMPANION = new TCPHelper(self.config.host_companion, self.config.port_companion);
-	
+
+				self.receiveBuffer = ''
+
 				self.SOCKET_COMPANION.on('error', (err) => {
 					self.log('error', 'Network error with Companion Satellite API: ' + err.message);
 					//try to connect again in 10 seconds
@@ -40,9 +42,20 @@ module.exports = {
 					self.log('info', 'Connected to Companion Satellite API');
 				})
 	
-				self.SOCKET_COMPANION.on('data', function (data) {	
-					self.processCompanionData(data); //this function will handle all incoming data from the Companion Satellite API
-				});
+				self.SOCKET_COMPANION.on('data', function (chunk) {	
+					self.receiveBuffer += chunk.toString()
+		
+					let lineEnd
+					while ((lineEnd = self.receiveBuffer.indexOf('\n')) !== -1) {
+						const line = self.receiveBuffer.slice(0, lineEnd).trim() // Extract and trim the line
+						self.receiveBuffer = self.receiveBuffer.slice(lineEnd + 1) // Update the buffer
+						try {
+							self.processCompanionData(line) // Process the line
+						} catch (error) {
+							console.error(error)
+						}
+					}
+				})
 			}
 			catch(error) {
 				self.log('error', 'Error initializing Companion Satellite API: ' + error.toString());
