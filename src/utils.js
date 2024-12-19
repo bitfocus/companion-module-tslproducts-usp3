@@ -153,7 +153,10 @@ module.exports = {
 
 					keyData.type = params[3].replace('TYPE=', '')
 					keyData.color = params[5].replace('COLOR=', '')
-					keyData.text = new Buffer.from(params[6].replace('TEXT=', ''), 'base64').toString('ascii')
+					//convert text from base64 to string
+					keyData.text = Buffer.from(params[7].replace('TEXT=', ''), 'base64').toString('utf-8')
+
+					console.log(params)
 
 					//change the button text if it is not of type BUTTON
 					switch (keyData.type) {
