@@ -1,9 +1,10 @@
 {
 	"name": "tslproducts-usp3",
-	"version": "1.0.0",
+	"version": "1.1.0",
 	"main": "index.js",
 	"scripts": {
-		"test": "echo \"Error: no test specified\" && exit 1"
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"format": "prettier --w ."
 	},
 	"repository": {
 		"type": "git",
@@ -11,12 +12,13 @@
 	},
 	"license": "MIT",
 	"dependencies": {
-		"@companion-module/base": "^1.4.1",
+		"@companion-module/base": "^1.11.2",
 		"net-snmp": "^3.9.6",
 		"node-rest-client": "^3.1.1",
 		"portfinder": "^1.0.32"
 	},
 	"devDependencies": {
-		"@companion-module/tools": "^0.5.1"
+		"@companion-module/tools": "^2.1.1",
+		"prettier": "^3.4.2"
 	}
 }
