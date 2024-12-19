@@ -1,15 +1,15 @@
-const { combineRgb } = require('@companion-module/base');
+const { combineRgb } = require('@companion-module/base')
 
 module.exports = {
 	initPresets() {
-		let self = this;
+		let self = this
 
-		let presets = [];
+		let presets = []
 
 		if (self.config.model == 'usp3') {
 			if (self.config.use_as_surface == false) {
 				for (var i = 0; i < this.KEY_LIST.length; i++) {
-					let keyObj = this.KEY_LIST[i];
+					let keyObj = this.KEY_LIST[i]
 					let presetObj = {
 						type: 'button',
 						category: 'Key Press',
@@ -27,11 +27,11 @@ module.exports = {
 										actionId: 'pressKey',
 										options: {
 											key: keyObj.id,
-										}
-									}
+										},
+									},
 								],
-								up: []
-							}
+								up: [],
+							},
 						],
 						feedbacks: [
 							{
@@ -43,16 +43,16 @@ module.exports = {
 								style: {
 									bgcolor: combineRgb(255, 0, 0),
 								},
-							}
+							},
 						],
 					}
-	
+
 					presets.push(presetObj)
 				}
-			}		
-	
+			}
+
 			for (var i = 0; i < this.GPI_LIST.length; i++) {
-				let gpiObj = this.GPI_LIST[i];
+				let gpiObj = this.GPI_LIST[i]
 				let presetObj = {
 					type: 'button',
 					category: 'GPI States',
@@ -66,8 +66,8 @@ module.exports = {
 					steps: [
 						{
 							down: [],
-							up: []
-						}
+							up: [],
+						},
 					],
 					feedbacks: [
 						{
@@ -79,15 +79,15 @@ module.exports = {
 							style: {
 								bgcolor: combineRgb(255, 0, 0),
 							},
-						}
+						},
 					],
 				}
-	
+
 				presets.push(presetObj)
 			}
-	
+
 			for (var i = 0; i < this.GPO_LIST.length; i++) {
-				let gpoObj = this.GPO_LIST[i];
+				let gpoObj = this.GPO_LIST[i]
 				let presetObj = {
 					type: 'button',
 					category: 'GPO Control - ON',
@@ -106,11 +106,11 @@ module.exports = {
 									options: {
 										gpo: gpoObj.id,
 										state: '1',
-									}
-								}
+									},
+								},
 							],
-							up: []
-						}
+							up: [],
+						},
 					],
 					feedbacks: [
 						{
@@ -122,13 +122,13 @@ module.exports = {
 							style: {
 								bgcolor: combineRgb(255, 0, 0),
 							},
-						}
+						},
 					],
 				}
-	
+
 				presets.push(presetObj)
 			}
-	
+
 			let presetGPOAllOnObj = {
 				type: 'button',
 				category: 'GPO Control - ON',
@@ -146,18 +146,18 @@ module.exports = {
 								actionId: 'setGPOAll',
 								options: {
 									state: '1',
-								}
-							}
+								},
+							},
 						],
-						up: []
-					}
+						up: [],
+					},
 				],
 				feedbacks: [],
 			}
-			presets.push(presetGPOAllOnObj);
-	
+			presets.push(presetGPOAllOnObj)
+
 			for (var i = 0; i < this.GPO_LIST.length; i++) {
-				let gpoObj = this.GPO_LIST[i];
+				let gpoObj = this.GPO_LIST[i]
 				let presetObj = {
 					type: 'button',
 					category: 'GPO Control - OFF',
@@ -176,11 +176,11 @@ module.exports = {
 									options: {
 										gpo: gpoObj.id,
 										state: '0',
-									}
-								}
+									},
+								},
 							],
-							up: []
-						}
+							up: [],
+						},
 					],
 					feedbacks: [
 						{
@@ -192,13 +192,13 @@ module.exports = {
 							style: {
 								bgcolor: combineRgb(255, 0, 0),
 							},
-						}
+						},
 					],
 				}
-	
+
 				presets.push(presetObj)
 			}
-	
+
 			let presetGPOAllOffObj = {
 				type: 'button',
 				category: 'GPO Control - OFF',
@@ -216,17 +216,17 @@ module.exports = {
 								actionId: 'setGPOAll',
 								options: {
 									state: '0',
-								}
-							}
+								},
+							},
 						],
-						up: []
-					}
+						up: [],
+					},
 				],
 				feedbacks: [],
 			}
-			presets.push(presetGPOAllOffObj);
+			presets.push(presetGPOAllOffObj)
 		}
 
-		this.setPresetDefinitions(presets);
-	}
+		this.setPresetDefinitions(presets)
+	},
 }

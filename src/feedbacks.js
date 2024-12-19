@@ -1,10 +1,10 @@
-const { combineRgb } = require('@companion-module/base');
+const { combineRgb } = require('@companion-module/base')
 
 module.exports = {
 	initFeedbacks() {
-		let self = this;
+		let self = this
 
-		let feedbacks = {};
+		let feedbacks = {}
 
 		if (self.config.model == 'usp3') {
 			feedbacks.gpiState = {
@@ -26,28 +26,28 @@ module.exports = {
 						default: '1',
 						choices: [
 							{ id: '1', label: 'On' },
-							{ id: '0', label: 'Off' }
-						]
+							{ id: '0', label: 'Off' },
+						],
 					},
 				],
 				defaultStyle: {
 					color: combineRgb(0, 0, 0),
-					bgcolor: combineRgb(255, 0, 0)
+					bgcolor: combineRgb(255, 0, 0),
 				},
 				callback: (event) => {
-					let opt = event.options;
-					let gpi = self.DATA.gpiStates.find(g => g.id == opt.gpi);
-	
+					let opt = event.options
+					let gpi = self.DATA.gpiStates.find((g) => g.id == opt.gpi)
+
 					if (gpi) {
 						if (gpi.state == parseInt(opt.state)) {
-							return true;
+							return true
 						}
 					}
-	
-					return false;
-				}
-			};
-	
+
+					return false
+				},
+			}
+
 			feedbacks.gpoState = {
 				type: 'boolean',
 				name: 'GPO Number is in X State',
@@ -67,28 +67,28 @@ module.exports = {
 						default: '1',
 						choices: [
 							{ id: '1', label: 'On' },
-							{ id: '0', label: 'Off' }
-						]
-					}
+							{ id: '0', label: 'Off' },
+						],
+					},
 				],
 				defaultStyle: {
 					color: combineRgb(0, 0, 0),
-					bgcolor: combineRgb(255, 0, 0)
+					bgcolor: combineRgb(255, 0, 0),
 				},
 				callback: (event) => {
-					let opt = event.options;
-					let gpo = self.DATA.gpoStates.find(g => g.id == opt.gpo);
-	
+					let opt = event.options
+					let gpo = self.DATA.gpoStates.find((g) => g.id == opt.gpo)
+
 					if (gpo) {
 						if (gpo.state == parseInt(opt.state)) {
-							return true;
+							return true
 						}
 					}
-	
-					return false;
-				}
-			};
-	
+
+					return false
+				},
+			}
+
 			feedbacks.memState = {
 				type: 'boolean',
 				name: 'Mem Number is in X State',
@@ -108,28 +108,28 @@ module.exports = {
 						default: '1',
 						choices: [
 							{ id: '1', label: 'On' },
-							{ id: '0', label: 'Off' }
-						]
+							{ id: '0', label: 'Off' },
+						],
 					},
 				],
 				defaultStyle: {
 					color: combineRgb(0, 0, 0),
-					bgcolor: combineRgb(255, 0, 0)
+					bgcolor: combineRgb(255, 0, 0),
 				},
 				callback: (event) => {
-					let opt = event.options;
-					let mem = self.DATA.memStates.find(g => g.id == opt.mem);
-	
+					let opt = event.options
+					let mem = self.DATA.memStates.find((g) => g.id == opt.mem)
+
 					if (mem) {
 						if (mem.state == parseInt(opt.state)) {
-							return true;
+							return true
 						}
 					}
-	
-					return false;
+
+					return false
 				},
-			};
-	
+			}
+
 			if (self.config.use_as_surface == false) {
 				feedbacks.keyState = {
 					type: 'boolean',
@@ -150,30 +150,30 @@ module.exports = {
 							default: '1',
 							choices: [
 								{ id: '1', label: 'Pressed' },
-								{ id: '0', label: 'Not Pressed' }
-							]
+								{ id: '0', label: 'Not Pressed' },
+							],
 						},
 					],
 					defaultStyle: {
 						color: combineRgb(0, 0, 0),
-						bgcolor: combineRgb(255, 0, 0)
+						bgcolor: combineRgb(255, 0, 0),
 					},
 					callback: (event) => {
-						let opt = event.options;
-						let key = self.DATA.keyStates.find(g => g.id == opt.key);
-		
+						let opt = event.options
+						let key = self.DATA.keyStates.find((g) => g.id == opt.key)
+
 						if (key) {
 							if (key.state == parseInt(opt.state)) {
-								return true;
+								return true
 							}
 						}
-		
-						return false;
-					}
-				};
+
+						return false
+					},
+				}
 			}
 		}
 
-		self.setFeedbackDefinitions(feedbacks);
-	}
+		self.setFeedbackDefinitions(feedbacks)
+	},
 }

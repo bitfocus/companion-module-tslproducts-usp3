@@ -5,5 +5,5 @@ module.exports = [
 			updatedActions: [],
 			updatedFeedbacks: [],
 		}
-	}
+	},
 ]

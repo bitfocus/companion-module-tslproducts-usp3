@@ -15,7 +15,7 @@ module.exports = {
 		{ id: '13', label: 'GPI 13' },
 		{ id: '14', label: 'GPI 14' },
 		{ id: '15', label: 'GPI 15' },
-		{ id: '16', label: 'GPI 16' }
+		{ id: '16', label: 'GPI 16' },
 	],
 	GPO_LIST: [
 		{ id: '01', label: 'GPO 1' },
@@ -33,7 +33,7 @@ module.exports = {
 		{ id: '13', label: 'GPO 13' },
 		{ id: '14', label: 'GPO 14' },
 		{ id: '15', label: 'GPO 15' },
-		{ id: '16', label: 'GPO 16' }
+		{ id: '16', label: 'GPO 16' },
 	],
 	MEM_LIST: [
 		{ id: '01', label: 'MEM 1' },
@@ -51,7 +51,7 @@ module.exports = {
 		{ id: '13', label: 'MEM 13' },
 		{ id: '14', label: 'MEM 14' },
 		{ id: '15', label: 'MEM 15' },
-		{ id: '16', label: 'MEM 16' }
+		{ id: '16', label: 'MEM 16' },
 	],
 	KEY_LIST: [
 		{ id: '01', label: 'KEY 1' },
@@ -69,7 +69,7 @@ module.exports = {
 		{ id: '13', label: 'KEY 13' },
 		{ id: '14', label: 'KEY 14' },
 		{ id: '15', label: 'KEY 15' },
-		{ id: '16', label: 'KEY 16' }
+		{ id: '16', label: 'KEY 16' },
 	],
 	COLORS: [
 		//the colors are the same between the two different types of panels, but only the ones with a hex value are implemented as surface colors
@@ -115,6 +115,6 @@ module.exports = {
 		{ id: '36', label: 'BLINKING_PURPLE_FAST_DIM' },
 		{ id: '37', label: 'BLINKING_PURPLE_SLOW_DIM' },
 		{ id: '30', label: 'BLINKING_WHITE_FAST_DIM' },
-		{ id: '31', label: 'BLINKING_WHITE_SLOW_DIM' }		
-	]
+		{ id: '31', label: 'BLINKING_WHITE_SLOW_DIM' },
+	],
 }
