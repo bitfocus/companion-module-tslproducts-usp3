@@ -158,12 +158,12 @@ module.exports = {
 
 							// Remove surrounding quotes
 							if (value.startsWith('"') && value.endsWith('"')) {
-							value = value.slice(1, -1)
+								value = value.slice(1, -1)
 							}
 
 							// Convert numeric strings to numbers
 							if (/^-?\d+$/.test(value)) {
-							value = Number(value)
+								value = Number(value)
 							}
 
 							obj[key] = value
