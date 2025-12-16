@@ -2,10 +2,6 @@
 
 This module will allow you to have a TSL Products Universal Switch Panel (USP3) or DNF Controls USP act as a satellite surface in Companion, or you can use it to remotely press buttons on the panel for other functions.
 
-## Module Development
-
-This module was developed and sponsored by [Middleman Software](http://middleman.tv).
-
 ### Module Configuration
 
 - Choose the model/panel type you will be using, either the newer TSL Products USP3 panel or the older DNF Controls USP panel, as they use different protocols.

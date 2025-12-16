@@ -9,10 +9,6 @@
 	"bugs": "https://github.com/bitfocus/companion-module-tslproducts-usp3/issues",
 	"maintainers": [
 		{
-			"name": "James Heliker",
-			"email": "james.heliker@middleman.tv"
-		},
-		{
 			"name": "Joseph Adams",
 			"email": "josephdadams@gmail.com"
 		}
@@ -26,5 +22,5 @@
 	},
 	"manufacturer": "TSL Products",
 	"products": ["Universal Switch Panel"],
-	"keywords": ["DNF Controls", "GPIO", "GPI", "GPO", "Contact Closure", "Middleman", "SCTE", "SCTE 104", "SCTE 35"]
+	"keywords": ["DNF Controls", "GPIO", "GPI", "GPO", "Contact Closure"]
 }
