@@ -148,15 +148,40 @@ module.exports = {
 						pressed: false,
 					}
 
-					let keyNumber = parseInt(params[2].replace('KEY=', ''))
+					function parseKeyValueArray(arr) {
+						return arr.slice(1).reduce((obj, entry) => {
+							const idx = entry.indexOf('=')
+							if (idx === -1) return obj
+
+							const key = entry.slice(0, idx)
+							let value = entry.slice(idx + 1)
+
+							// Remove surrounding quotes
+							if (value.startsWith('"') && value.endsWith('"')) {
+							value = value.slice(1, -1)
+							}
+
+							// Convert numeric strings to numbers
+							if (/^-?\d+$/.test(value)) {
+							value = Number(value)
+							}
+
+							obj[key] = value
+							return obj
+						}, {})
+					}
+
+					const result = parseKeyValueArray(params)
+					console.log(result)
+
+					let keyNumber = result.KEY
 					keyData.number = 1 + keyNumber
 
-					keyData.type = params[3].replace('TYPE=', '')
-					keyData.color = params[5].replace('COLOR=', '')
-					//convert text from base64 to string
-					keyData.text = Buffer.from(params[7].replace('TEXT=', ''), 'base64').toString('utf-8')
+					keyData.type = result.TYPE
+					keyData.color = result.COLOR
 
-					console.log(params)
+					//convert text from base64 to string
+					keyData.text = Buffer.from(result.TEXT, 'base64').toString('utf-8')
 
 					//change the button text if it is not of type BUTTON
 					switch (keyData.type) {
