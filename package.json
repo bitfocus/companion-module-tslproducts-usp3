@@ -18,7 +18,7 @@
 		"portfinder": "^1.0.32"
 	},
 	"devDependencies": {
-		"@companion-module/tools": "^2.5.0",
+		"@companion-module/tools": "^2.6.1",
 		"prettier": "^3.4.2"
 	}
 }
